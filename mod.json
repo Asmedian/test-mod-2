@@ -7,7 +7,7 @@
 	"description": {
 		"full": {
 			"Cn_Simp": "description_chn.txt",
-			"en_US": "changelog.txt",
+			"en_US": "Changelog.txt",
 			"ru_RU": "ChangelogRus.txt"
 		},
 		"short": {
