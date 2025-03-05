@@ -30,7 +30,7 @@ jobs:
         id: compare
         run: |
           LATEST_VERSION=$(echo '${{ steps.latest_release.outputs.data }}' | jq -r '.tag_name')
-          if [ "$VERSION" \> "$LATEST_VERSION" ]; then
+          if [ "$VERSION" != "$LATEST_VERSION" ]; then
             echo "NEW_VERSION=true" >> $GITHUB_ENV
           else
             echo "NEW_VERSION=false" >> $GITHUB_ENV
@@ -39,7 +39,7 @@ jobs:
       - name: Create archive
         if: env.NEW_VERSION == 'true'
         run: |
-          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git* some_large_folder/*"
+          zip -r era-project-${{ env.VERSION }}.zip . -x ".git*" "some_large_folder/*"
 
       - name: Create draft release
         if: env.NEW_VERSION == 'true'
