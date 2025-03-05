@@ -14,7 +14,9 @@ jobs:
 
       - name: Get current version
         id: version
-        run: echo "VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' ')" >> $GITHUB_ENV
+        run: |
+          VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' \r')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Get latest release
         id: latest_release
@@ -28,15 +30,16 @@ jobs:
         id: compare
         run: |
           LATEST_VERSION=$(echo '${{ steps.latest_release.outputs.data }}' | jq -r '.tag_name')
-          if [[ "$VERSION" > "$LATEST_VERSION" ]]; then
+          if [ "$VERSION" \> "$LATEST_VERSION" ]; then
             echo "NEW_VERSION=true" >> $GITHUB_ENV
           else
             echo "NEW_VERSION=false" >> $GITHUB_ENV
+          fi
 
       - name: Create archive
         if: env.NEW_VERSION == 'true'
         run: |
-          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git*" "any_other_excluded_folder/*"
+          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git* some_large_folder/*"
 
       - name: Create draft release
         if: env.NEW_VERSION == 'true'
@@ -71,6 +74,6 @@ jobs:
       - name: Delete draft release if failed
         if: failure()
         run: |
-          gh release delete ${{ env.VERSION }} --yes --repo Asmedian/test-mod-2
+          gh release delete "${{ env.VERSION }}" --yes --repo Asmedian/test-mod-2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
