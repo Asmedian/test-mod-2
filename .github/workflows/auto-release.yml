@@ -1,9 +1,9 @@
 name: Auto Release
 
 on:
+  workflow_dispatch: # Ручной запуск
   # schedule:
-  #   - cron: '0 * * * *' # Запуск раз в час
-  workflow_dispatch: # Возможность запустить вручную
+  #   - cron: '0 * * * *' # Отключено для тестов
 
 jobs:
   check-version:
@@ -12,32 +12,45 @@ jobs:
       - name: Checkout репозитория
         uses: actions/checkout@v4
 
-      - name: Получение текущей версии
-        id: version
-        run: echo "VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' ')" >> $GITHUB_ENV
+      - name: Получение текущей версии из ERA_Project.ini
+        run: |
+          VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' ')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Текущая версия: $VERSION"
 
-      - name: Получение последнего релиза
-        id: latest_release
-        uses: octokit/request-action@v2.x
+      - name: Получение последнего релиза через Octokit
+        id: get_latest_release
+        uses: actions/github-script@v7
         with:
-          route: GET /repos/Asmedian/test-mod-2/releases/latest
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { data } = await github.rest.repos.getLatestRelease({
+              owner: 'Asmedian',
+              repo: 'test-mod-2'
+            });
+            console.log(`Последний релиз: ${data.tag_name}`);
+            core.setOutput('latest_version', data.tag_name);
+
+      - name: Логирование версии релиза
+        run: |
+          echo "Последний релиз: ${{ steps.get_latest_release.outputs.latest_version }}"
 
       - name: Сравнение версий
-        id: compare
         run: |
-          LATEST_VERSION=$(echo '${{ steps.latest_release.outputs.data }}' | jq -r '.tag_name')
-          if [[ "$VERSION" > "$LATEST_VERSION" ]]; then
+          if [[ "${{ env.VERSION }}" > "${{ steps.get_latest_release.outputs.latest_version }}" ]]; then
             echo "NEW_VERSION=true" >> $GITHUB_ENV
+            echo "Найдена новая версия: ${{ env.VERSION }}"
           else
             echo "NEW_VERSION=false" >> $GITHUB_ENV
+            echo "Обновление не требуется."
           fi
 
       - name: Создание архива
         if: env.NEW_VERSION == 'true'
         run: |
-          zip -r era.zip . -x "*.git* some_large_folder/*"
+          echo "Создаётся архив era-project-${{ env.VERSION }}.zip..."
+          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git* some_large_folder/*"
+          echo "Архив era-project-${{ env.VERSION }}.zip успешно создан."
 
       - name: Создание нового релиза
         if: env.NEW_VERSION == 'true'
@@ -51,13 +64,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Логирование URL загрузки релиза
+        if: env.NEW_VERSION == 'true'
+        run: |
+          echo "URL загрузки релиза: ${{ steps.create_release.outputs.upload_url }}"
+
       - name: Загрузка архива в релиз
         if: env.NEW_VERSION == 'true'
         uses: actions/upload-release-asset@v1
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./era.zip
-          asset_name: era.zip
+          asset_path: ./era-project-${{ env.VERSION }}.zip
+          asset_name: era-project-${{ env.VERSION }}.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
