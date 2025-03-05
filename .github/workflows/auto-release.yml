@@ -16,7 +16,9 @@ jobs:
         id: version
         run: |
           VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' \r')
+          CLEAN_VERSION=$(echo "$VERSION" | tr -d '.')
           echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
 
       - name: Get latest release
         id: latest_release
@@ -48,6 +50,7 @@ jobs:
         with:
           tag_name: ${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
+          body: "[Changelog](https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ env.CLEAN_VERSION }})"
           draft: true
           prerelease: false
         env:
