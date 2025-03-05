@@ -49,7 +49,7 @@ jobs:
         if: env.NEW_VERSION == 'true'
         run: |
           echo "Создаётся архив era-project-${{ env.VERSION }}.zip..."
-          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git* some_large_folder/*"
+          zip -r "era-project-${{ env.VERSION }}.zip" . -x "*.git* some_large_folder/*"
           echo "Архив era-project-${{ env.VERSION }}.zip успешно создан."
 
       - name: Создание нового релиза
