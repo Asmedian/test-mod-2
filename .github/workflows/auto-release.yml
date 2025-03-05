@@ -1,75 +1,56 @@
 name: Auto Release
 
 on:
-  workflow_dispatch: # Ручной запуск
-  # schedule:
-  #   - cron: '0 * * * *' # Отключено для тестов
+  #schedule:
+  #  - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows manual execution
 
 jobs:
   check-version:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout репозитория
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Получение текущей версии из ERA_Project.ini
-        run: |
-          VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' ')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-          echo "Текущая версия: $VERSION"
+      - name: Get current version
+        id: version
+        run: echo "VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' ')" >> $GITHUB_ENV
 
-      - name: Получение последнего релиза через Octokit
-        id: get_latest_release
-        uses: actions/github-script@v7
+      - name: Get latest release
+        id: latest_release
+        uses: octokit/request-action@v2.x
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { data } = await github.rest.repos.getLatestRelease({
-              owner: 'Asmedian',
-              repo: 'test-mod-2'
-            });
-            console.log(`Последний релиз: ${data.tag_name}`);
-            core.setOutput('latest_version', data.tag_name);
+          route: GET /repos/Asmedian/test-mod-2/releases/latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Логирование версии релиза
+      - name: Compare versions
+        id: compare
         run: |
-          echo "Последний релиз: ${{ steps.get_latest_release.outputs.latest_version }}"
-
-      - name: Сравнение версий
-        run: |
-          if [[ "${{ env.VERSION }}" > "${{ steps.get_latest_release.outputs.latest_version }}" ]]; then
+          LATEST_VERSION=$(echo '${{ steps.latest_release.outputs.data }}' | jq -r '.tag_name')
+          if [[ "$VERSION" > "$LATEST_VERSION" ]]; then
             echo "NEW_VERSION=true" >> $GITHUB_ENV
-            echo "Найдена новая версия: ${{ env.VERSION }}"
           else
             echo "NEW_VERSION=false" >> $GITHUB_ENV
-            echo "Обновление не требуется."
-          fi
 
-      - name: Создание архива
+      - name: Create archive
         if: env.NEW_VERSION == 'true'
         run: |
-          echo "Создаётся архив era-project-${{ env.VERSION }}.zip..."
-          zip -r "era-project-${{ env.VERSION }}.zip" . -x "*.git* some_large_folder/*"
-          echo "Архив era-project-${{ env.VERSION }}.zip успешно создан."
+          zip -r era-project-${{ env.VERSION }}.zip . -x "*.git*" "any_other_excluded_folder/*"
 
-      - name: Создание нового релиза
+      - name: Create draft release
         if: env.NEW_VERSION == 'true'
         id: create_release
         uses: actions/create-release@v1
         with:
           tag_name: ${{ env.VERSION }}
           release_name: Release ${{ env.VERSION }}
-          draft: false
+          draft: true
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Логирование URL загрузки релиза
-        if: env.NEW_VERSION == 'true'
-        run: |
-          echo "URL загрузки релиза: ${{ steps.create_release.outputs.upload_url }}"
-
-      - name: Загрузка архива в релиз
+      - name: Upload archive to release
         if: env.NEW_VERSION == 'true'
         uses: actions/upload-release-asset@v1
         with:
@@ -77,5 +58,19 @@ jobs:
           asset_path: ./era-project-${{ env.VERSION }}.zip
           asset_name: era-project-${{ env.VERSION }}.zip
           asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release if successful
+        if: success()
+        run: |
+          gh release edit ${{ env.VERSION }} --draft=false --repo Asmedian/test-mod-2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete draft release if failed
+        if: failure()
+        run: |
+          gh release delete ${{ env.VERSION }} --yes --repo Asmedian/test-mod-2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
