@@ -26,8 +26,9 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Send Message to Discord
-        uses: Ilshidur/action-discord@master
+        uses: appleboy/discord-action@master
         with:
-          args: "Ваше сообщение для отправки в Discord"
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          webhook_id: ${{ secrets.WEBHOOK_ID }}
+          webhook_token: ${{ secrets.WEBHOOK_TOKEN }}
+          message: "Обновление ${{ env.version }}:\n${{ env.changelog }}"
+          file: "CHANGELOG.md"
