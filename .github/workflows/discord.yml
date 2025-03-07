@@ -10,17 +10,18 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Read Version from ERA_Project.ini
+      - name: Get current version
         id: version
         run: |
-          VERSION=$(grep 'Version=' ERA_Project.ini | cut -d'=' -f2 | tr -d '\r')
-          echo "Detected version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
+          VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' \r')
+          CLEAN_VERSION=$(echo "$VERSION" | tr -d '.')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
 
       - name: Send Message to Discord
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "**The <@&800035036983984160> has been updated to version ${{ env.version }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!"
+          message: "**The <@&800035036983984160> has been updated to version ${{ env.VERSION }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!\n\n[Changelog on GitHub](https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ env.CLEAN_VERSION }})/nPlease launch ⁠<#832999696858480670> to get the update"
           file: "CHANGELOG.md"
