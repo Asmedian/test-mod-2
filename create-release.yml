@@ -1,0 +1,101 @@
+name: Auto Release and Notify
+
+on:
+  #schedule:
+  #  - cron: '55 * * * *' # Runs every hour
+  workflow_dispatch: # Allows manual execution
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get current version
+        id: version
+        run: |
+          VERSION=$(awk -F= '/^Version/{print $2}' ERA_Project.ini | tr -d ' \r')
+          CLEAN_VERSION=$(echo "$VERSION" | tr -d '.')
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=$CLEAN_VERSION" >> $GITHUB_ENV
+
+      - name: Get latest release
+        id: latest_release
+        uses: octokit/request-action@v2.x
+        with:
+          route: GET /repos/Asmedian/test-mod-2/releases/latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare versions
+        id: compare
+        run: |
+          LATEST_VERSION=$(echo '${{ steps.latest_release.outputs.data }}' | jq -r '.tag_name')
+          if [ "$VERSION" != "$LATEST_VERSION" ]; then
+            echo "NEW_VERSION=true" >> $GITHUB_ENV
+          else
+            echo "NEW_VERSION=false" >> $GITHUB_ENV
+          fi
+
+  release:
+    needs: check-version
+    if: needs.check-version.outputs.NEW_VERSION == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create archive
+        run: |
+          zip -r era-project-${{ env.VERSION }}.zip . -x ".git*" "some_large_folder/*"
+
+      - name: Create draft release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: Release ${{ env.VERSION }}
+          body: "[Changelog](https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ env.CLEAN_VERSION }})"
+          draft: true
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload archive to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./era-project-${{ env.VERSION }}.zip
+          asset_name: era-project-${{ env.VERSION }}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish release if successful
+        run: |
+          gh release edit ${{ env.VERSION }} --draft=false --repo Asmedian/test-mod-2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete draft release if failed
+        if: failure()
+        run: |
+          gh release delete "${{ env.VERSION }}" --yes --repo Asmedian/test-mod-2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  post_changelog:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Send Message to Discord
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: "**The <@&800035036983984160> has been updated to version ${{ env.VERSION }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!\n## [Changelog on GitHub](<https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ env.CLEAN_VERSION }}>)\nPlease launch ⁠<#832999696858480670> to get the update"
+          file: "CHANGELOG.md"
