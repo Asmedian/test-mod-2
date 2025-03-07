@@ -17,18 +17,10 @@ jobs:
           echo "Detected version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_ENV
 
-      - name: Extract Changelog for Latest Version
-        id: changelog
-        run: |
-          awk '/### Версия ${{ env.version }}/ {print; getline; print; exit}' CHANGELOG.md > latest_changelog.md
-          echo "changelog<<EOF" >> $GITHUB_ENV
-          cat latest_changelog.md >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-
       - name: Send Message to Discord
         uses: appleboy/discord-action@master
         with:
           webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
           webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-          message: "Обновление ${{ env.version }}:\n${{ env.changelog }}"
+          message: "**The <@&800035036983984160> has been updated to version ${{ env.version }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!"
           file: "CHANGELOG.md"
