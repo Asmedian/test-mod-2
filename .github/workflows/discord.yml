@@ -28,8 +28,8 @@ jobs:
           echo "EOF" >> $GITHUB_ENV
 
       - name: Send Message to Discord
-        uses: Ilshidur/action-discord@master
+        uses: rtCamp/action-discord@v2
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
         with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          message: "Обновление ${{ env.version }}:\n${{ env.changelog }}"
-          file: "CHANGELOG.md"
+          args: "Обновление ${{ env.version }}:\n${{ env.changelog }}"
