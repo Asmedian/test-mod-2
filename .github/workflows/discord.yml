@@ -2,7 +2,7 @@ name: Post Changelog to Discord
 
 on:
   workflow_run:
-    workflows: ["auto-release.yml"]
+    workflows: ["Auto Release"] # Must match name in 'auto-release.yml'
     types:
       - completed
   workflow_dispatch: # Allows manual execution
