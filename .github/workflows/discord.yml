@@ -1,0 +1,35 @@
+name: Post Changelog to Discord
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  post_changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Read Version from ERA_Project.ini
+        id: version
+        run: |
+          VERSION=$(grep 'Version=' ERA_Project.ini | cut -d'=' -f2 | tr -d '\r')
+          echo "Detected version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_ENV
+
+      - name: Extract Changelog for Latest Version
+        id: changelog
+        run: |
+          awk '/### Версия ${{ env.version }}/ {print; getline; print; exit}' CHANGELOG.md > latest_changelog.md
+          echo "changelog<<EOF" >> $GITHUB_ENV
+          cat latest_changelog.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Send Message to Discord
+        uses: Ilshidur/action-discord@master
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          message: "Обновление ${{ env.version }}:\n${{ env.changelog }}"
+          file: "CHANGELOG.md"
