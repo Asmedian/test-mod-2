@@ -50,9 +50,20 @@ jobs:
     needs: check-version
     if: needs.check-version.outputs.NEW_VERSION == 'true'
     runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.set_version.outputs.VERSION }}
+      CLEAN_VERSION: ${{ steps.set_version.outputs.CLEAN_VERSION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set version output
+        id: set_version
+        run: |
+          echo "VERSION=${{ needs.check-version.outputs.VERSION }}" >> $GITHUB_ENV
+          echo "CLEAN_VERSION=${{ needs.check-version.outputs.CLEAN_VERSION }}" >> $GITHUB_ENV
+          echo "VERSION=${{ needs.check-version.outputs.VERSION }}" >> $GITHUB_OUTPUT
+          echo "CLEAN_VERSION=${{ needs.check-version.outputs.CLEAN_VERSION }}" >> $GITHUB_OUTPUT
 
       - name: Create archive
         run: |
@@ -100,13 +111,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Send Message to Discord (Embed)
+      - name: Debug version output
         run: |
-          JSON_PAYLOAD=$(jq -n \
-            --arg content "**The <@&800035036983984160> has been updated to version ${{ needs.check-version.outputs.VERSION }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!\n## [Changelog on GitHub](<https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ needs.check-version.outputs.CLEAN_VERSION }}>)\nPlease launch ⁠<#832999696858480670> to get the update" \
-            '{ "content": $content }')
-          
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d "$JSON_PAYLOAD" \
-               https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          echo "VERSION: ${{ needs.release.outputs.VERSION }}"
+          echo "CLEAN_VERSION: ${{ needs.release.outputs.CLEAN_VERSION }}"
+
+      - name: Send Message to Discord
+        uses: appleboy/discord-action@master
+        with:
+          webhook_id: ${{ secrets.DISCORD_WEBHOOK_ID }}
+          webhook_token: ${{ secrets.DISCORD_WEBHOOK_TOKEN }}
+          message: "**The <@&800035036983984160> has been updated to version ${{ needs.release.outputs.VERSION }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!\n## [Changelog on GitHub](<https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ needs.release.outputs.CLEAN_VERSION }}>)\nPlease launch ⁠<#832999696858480670> to get the update"
+          file: "CHANGELOG.md"
