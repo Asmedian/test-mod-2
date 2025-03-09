@@ -111,11 +111,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Debug version output
-        run: |
-          echo "VERSION: ${{ needs.release.outputs.VERSION }}"
-          echo "CLEAN_VERSION: ${{ needs.release.outputs.CLEAN_VERSION }}"
-
       - name: Send Message to Discord
         uses: appleboy/discord-action@master
         with:
