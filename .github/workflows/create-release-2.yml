@@ -105,7 +105,7 @@ jobs:
           curl -H "Content-Type: application/json" \
           -X POST \
           -d '{
-            "content": "**The <@&800035036983984160> has been updated to version ${{ needs.check-version.outputs.VERSION }}**",
+            "content": "**The <@&800035036983984160> has been updated to version ${{ needs.check-version.outputs.VERSION }}**\nA big THANK YOU for your donations! They encourage me to work on the Assembly!\n## [Changelog on GitHub](<https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md#version-${{ needs.check-version.outputs.CLEAN_VERSION }}>)\nPlease launch ⁠<#832999696858480670> to get the update",
             "embeds": [{
               "title": "📜 Changelog",
               "description": "'"$(cat CHANGELOG.md | head -n 15 | sed ':a;N;$!ba;s/\n/\\n/g')"'",
@@ -113,4 +113,3 @@ jobs:
             }]
           }' \
           https://discord.com/api/webhooks/${{ secrets.DISCORD_WEBHOOK_ID }}/${{ secrets.DISCORD_WEBHOOK_TOKEN }}
-
