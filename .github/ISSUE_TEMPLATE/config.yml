@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord server
+    url: https://discord.gg/bvfJGZe
+    about: Have questions? Try asking on our Discord - this issue tracker is for reporting bugs or feature requests only
+  - name: Heroes Launcher
+    url: https://github.com/HeroesLauncher/heroeslauncher/releases
+    about: Use Heroes Launcher to easily install and update ERA project
