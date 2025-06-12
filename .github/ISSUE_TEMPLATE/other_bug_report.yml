@@ -6,10 +6,10 @@ body:
   attributes:
     label: ERA project version
     description: |
-      What version of ERA project are you using?
+      What version of ERA project are you using? The version is displayed in the lower right corner of the game's main menu.
 
       Note: Please only report issues for [latest versions of ERA project](https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md).
-    placeholder: "2.0"
+    placeholder: "2.123"
   validations:
     required: true
 
