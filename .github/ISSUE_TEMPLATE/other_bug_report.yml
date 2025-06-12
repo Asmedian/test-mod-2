@@ -9,14 +9,19 @@ body:
       What version of ERA project are you using?
 
       Note: Please only report issues for [latest versions of ERA project](https://github.com/ERA-Projects/era-project-eng/blob/main/CHANGELOG.md).
-    placeholder: 2.0
+    placeholder: "2.0"
   validations:
     required: true
-- type: boolean
+
+- type: dropdown
   attributes:
     label: If mods not included in the ERA project are used, does the error remain when they are disabled?
+    options:
+      - Yes
+      - No
   validations:
     required: true
+
 - type: textarea
   attributes:
     label: Describe what caused the error.
