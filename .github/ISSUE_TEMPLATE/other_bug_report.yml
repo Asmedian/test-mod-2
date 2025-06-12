@@ -17,8 +17,8 @@ body:
   attributes:
     label: If mods not included in the ERA project are used, does the error remain when they are disabled?
     options:
-      - Yes
-      - No
+      - "Yes"
+      - "No"
   validations:
     required: true
 
