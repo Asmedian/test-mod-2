@@ -1,6 +1,5 @@
 name: ERM Report
 description: Report a bug in Electron
-type: erm
 labels: "erm :beetle:"
 body:
 - type: checkboxes
