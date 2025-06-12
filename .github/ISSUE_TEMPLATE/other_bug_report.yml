@@ -17,6 +17,7 @@ body:
   attributes:
     label: If mods not included in the ERA project are used, does the error remain when they are disabled?
     options:
+      - "Select"
       - "Yes"
       - "No"
   validations:
@@ -35,6 +36,6 @@ body:
 - type: textarea
   attributes:
     label: Describe what caused the error.
-    description: Description of what happened
+    description: Description of what happened. It is advisable to write a list of mods in text or a screenshot of the mod manager window.
   validations:
     required: true
