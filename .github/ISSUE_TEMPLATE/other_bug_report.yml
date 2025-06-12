@@ -28,3 +28,8 @@ body:
     description: Description of what happened
   validations:
     required: true
+    
+- type: textarea
+  attributes:
+    label: Additional information and logs
+    description: Please attach any relevant logs, screenshots, or files using GitHub's file upload below.
