@@ -22,14 +22,18 @@ body:
   validations:
     required: true
 
+- type: checkbox
+  attributes:
+    label: Debug files and screenshots
+    description: Please attach debug files, screenshots, or files using GitHub's file upload below.
+    options:
+      - "Ok"
+  validations:
+    required: true
+    
 - type: textarea
   attributes:
     label: Describe what caused the error.
     description: Description of what happened
   validations:
     required: true
-    
-- type: textarea
-  attributes:
-    label: Additional information and logs
-    description: Please attach any relevant logs, screenshots, or files using GitHub's file upload below.
