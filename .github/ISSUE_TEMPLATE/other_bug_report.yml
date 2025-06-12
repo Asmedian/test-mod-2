@@ -1,6 +1,6 @@
 name: 🐞 Bug Report
 description: For bugs that don't fit crash or ERM-specific categories
-labels: "bug"
+labels: "bug, user report"
 body:
 - type: input
   attributes:
