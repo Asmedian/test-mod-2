@@ -1,6 +1,6 @@
 name: 💥 Crash Report
 description: Report game crash
-labels: "crash"
+labels: "crash, user report"
 body:
 - type: input
   attributes:
