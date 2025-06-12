@@ -1,6 +1,6 @@
 name: Crash Report
-description: Report a bug in Electron
-labels: "crash :beetle:"
+description: Report game crash
+labels: "crash"
 body:
 - type: checkboxes
   attributes:
