@@ -22,12 +22,13 @@ body:
   validations:
     required: true
 
-- type: checkbox
+- type: checkboxes
   attributes:
     label: Debug files and screenshots
     description: Please attach debug files, screenshots, or files using GitHub's file upload below.
     options:
-      - "Ok"
+      - label: "Ok"
+        required: true
   validations:
     required: true
     
