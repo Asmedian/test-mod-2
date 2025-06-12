@@ -1,4 +1,4 @@
-name: 🐞 General Bug Report
+name: 🐞 General Report
 description: For bugs that don't fit crash or ERM-specific categories
 labels: "bug"
 body:
