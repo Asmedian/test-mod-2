@@ -19,6 +19,7 @@ body:
     options:
       - "Yes"
       - "No"
+      - "I haven't checked"
   validations:
     required: true
 
