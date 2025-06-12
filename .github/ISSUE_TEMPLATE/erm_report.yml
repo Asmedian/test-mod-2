@@ -1,6 +1,6 @@
 name: 📜 ERM Script Issue
 description: Report ERM error
-labels: "erm"
+labels: "erm, user report"
 body:
 - type: input
   attributes:
