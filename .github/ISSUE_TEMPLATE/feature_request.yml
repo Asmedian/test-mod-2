@@ -1,6 +1,5 @@
 name: Feature Request
 description: Suggest an idea for Heroes Launcher
-type: 'enhancement'
 labels: "enhancement :sparkles:"
 body:
 - type: textarea
