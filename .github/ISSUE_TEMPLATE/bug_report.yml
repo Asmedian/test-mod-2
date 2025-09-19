@@ -1,6 +1,5 @@
 name: Bug Report
 description: Report a bug in Heroes Launcher
-type: 'bug'
 labels: "bug :beetle:"
 body:
 - type: input
@@ -30,10 +29,7 @@ body:
     label: Please specify your OS
     description: If you selected "Other" above, enter your OS here
   validations:
-    required: true
-  if:
-    field: os
-    includes: "Other (specify below)"
+    required: false
 - type: textarea
   attributes:
     label: Describe the bug
